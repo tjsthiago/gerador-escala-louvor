@@ -16,13 +16,13 @@ test("condução: Teclado (T) é resolvido antes de Violão (V) — ambas priori
   expect(vagaViolao).toMatchObject({ conducao: true });
 });
 
-test("vocal: Baixo (B) é resolvido antes de Contralto (C) — ambas prioridade 2", async ({ page }) => {
-  const sara = integrante("Sara", ["Baixo", "Contralto"]);
-  const resultado = await gerarEscala(page, [sara], posicoes("Baixo", "Contralto"));
+test("vocal: Contralto (C) é resolvido antes de Tenor (T) — ambas prioridade 2", async ({ page }) => {
+  const sara = integrante("Sara", ["Contralto", "Tenor"]);
+  const resultado = await gerarEscala(page, [sara], posicoes("Contralto", "Tenor"));
 
-  expect(integranteDe(resultado, "Baixo")).toBe("Sara");
-  expect(estaVaga(resultado, "Contralto")).toBe(true);
+  expect(integranteDe(resultado, "Contralto")).toBe("Sara");
+  expect(estaVaga(resultado, "Tenor")).toBe(true);
 
-  const vagaContralto = resultado.vagas.find((v) => v.posicao === "Contralto");
-  expect(vagaContralto).toMatchObject({ conducao: false });
+  const vagaTenor = resultado.vagas.find((v) => v.posicao === "Tenor");
+  expect(vagaTenor).toMatchObject({ conducao: false });
 });

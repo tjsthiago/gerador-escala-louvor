@@ -1,6 +1,6 @@
 # Regras de Preenchimento da Escala do Grupo de Louvor
 
-**Versão:** 1.0
+**Versão:** 1.2
 **Módulo relacionado:** Gerador de escala (`index.html`)
 
 ---
@@ -73,6 +73,9 @@ Sem regras precisas, decisões diferentes (humanas ou automatizadas) chegam a es
 | **Integrante único** | Integrante disponível que é o único, entre todos os disponíveis no culto, com habilidade cadastrada para determinada posição. |
 | **Escalado** | Integrante que já recebeu uma posição na escala em construção. |
 | **Vaga em aberto** | Posição sem integrante escalado. |
+| **Naipe** | Posição da categoria Vocal (Melodia, Contralto, Tenor) — cada uma é uma parte vocal distinta. **[NOVO]** |
+
+**Nota sobre habilidade Vocal [NOVO]:** para posições da categoria Vocal, a habilidade é sempre registrada pelo naipe específico (ex.: um integrante tem a habilidade "Contralto", não "Vocal"). Não existe habilidade genérica "Vocal" que conceda aptidão a todos os naipes simultaneamente — nisso, Vocal funciona exatamente como Instrumental: a habilidade é sempre por posição.
 
 ---
 
@@ -86,7 +89,7 @@ O objetivo é fechar primeiro as posições de instrumentos de condução, segui
 
 **Ordem de resolução:** todas as posições marcadas como instrumento de condução são resolvidas antes de qualquer posição não-condução ou vocal, independentemente do número de prioridade destas últimas. Dentro de cada um desses dois grupos, resolve-se por prioridade crescente.
 
-**Regra 1.1 — Desempate de prioridade entre posições [NOVO]:** quando duas ou mais posições do mesmo grupo (condução, ou não-condução/vocal) têm o mesmo número de prioridade — situação comum no catálogo real (ver §7.1; ex.: Teclado e Violão, ambas condução, prioridade 1; Contralto e Baixo, ambas vocal, prioridade 2), a ordem de resolução entre elas segue **ordem alfabética pelo nome da posição**. Este critério decide qual **posição** é processada primeiro; é distinto do critério de desempate entre **candidatos** da Regra 4.
+**Regra 1.1 — Desempate de prioridade entre posições [NOVO]:** quando duas ou mais posições do mesmo grupo (condução, ou não-condução/vocal) têm o mesmo número de prioridade — situação comum no catálogo real (ver §7.1; ex.: Teclado e Violão, ambas condução, prioridade 1; Contralto e Tenor, ambas vocal, prioridade 2), a ordem de resolução entre elas segue **ordem alfabética pelo nome da posição**. Este critério decide qual **posição** é processada primeiro; é distinto do critério de desempate entre **candidatos** da Regra 4.
 
 - **Critério de aceite:** ao final do processo, não deve existir uma posição de condução em aberto se houver algum integrante disponível, apto e ainda não integralmente ocupado (ver Regra 6) capaz de preenchê-la.
 - **Critério de aceite (1.1):** para o mesmo conjunto de posições e integrantes disponíveis, a ordem de processamento entre posições de mesma prioridade e mesmo grupo é sempre a mesma (alfabética), garantindo resultado determinístico mesmo diante de empates de prioridade.
@@ -152,6 +155,16 @@ Se, ao final da aplicação das regras acima, uma posição permanecer sem nenhu
 
 - **Critério de aceite:** o resultado final da escala nunca omite silenciosamente uma posição sem candidato — ela é sempre listada e sinalizada.
 
+### Regra 7 — Preferência de Contra baixo sobre Violão quando há guitarrista **[NOVO]**
+
+Guitarra e Violão cobrem um papel harmônico parecido; quando um integrante foi escalado em Guitarra nesse culto, o integrante escalado em Violão que também tem habilidade Contra baixo é preferido no Contra baixo — se ele estiver vago — em vez do Violão, para garantir a cobertura do Baixo.
+
+- Aplica-se **somente** quando: (1) alguém foi de fato escalado em Guitarra nesse culto (não basta existir um integrante apto — ele precisa ter sido efetivamente alocado lá); (2) o integrante escalado em Violão também tem habilidade Contra baixo; (3) o Contra baixo está entre as posições selecionadas do culto e está vago. Se qualquer uma dessas condições não se cumprir, a regra não se aplica e o Violão permanece como decidido pela Regra 1/3.1.
+- **[REVISADO — prioridade explícita]** Esta regra tem prioridade sobre a Regra 1 e a Regra 3.1: mesmo que o integrante deslocado fosse o único apto para Violão, ele ainda é movido para o Contra baixo. O Violão fica como **vaga em aberto — condução**, deliberadamente sem cascata de substituição (ao contrário da Regra 5) — é uma troca única, não uma reavaliação em cadeia.
+- Se o Contra baixo já estiver ocupado por outra pessoa, a regra não se aplica: o objetivo (garantir o Baixo) já foi atingido, e não há motivo para abrir mão de uma posição de condução sem necessidade.
+- Escopo: esta regra é específica ao trio Guitarra/Violão/Contra baixo. Não é um padrão geral de "redundância entre instrumentos" — ver ADR-0005.
+- **Critério de aceite:** se alguém está escalado em Guitarra e o integrante escalado em Violão também tem habilidade Contra baixo, e o Contra baixo está vago, o resultado final tem esse integrante no Contra baixo (não no Violão), e o Violão aparece como vaga em aberto — condução.
+
 ---
 
 ## 7. Casos de exceção e exemplos de referência
@@ -174,7 +187,7 @@ Valores reais extraídos da planilha original ("Priorização escala grupo de lo
 |---|---|---|---|
 | Vocal | Melodia | 1 | — |
 | Vocal | Contralto | 2 | — |
-| Vocal | Baixo | 2 | — |
+| Vocal | Tenor | 2 | — |
 | Instrumental | Teclado | 1 | Sim |
 | Instrumental | Violão | 1 | Sim |
 | Instrumental | Piano | 2 | Sim |
@@ -187,7 +200,7 @@ Valores reais extraídos da planilha original ("Priorização escala grupo de lo
 
 ## 8. Métricas de sucesso
 
-- **100% das posições de condução preenchidas** sempre que exista pelo menos um integrante disponível e apto para cada uma delas, considerando os limites de acúmulo da Regra 2.
+- **100% das posições de condução preenchidas** sempre que exista pelo menos um integrante disponível e apto para cada uma delas, considerando os limites de acúmulo da Regra 2 **e a exceção deliberada da Regra 7** (que pode deixar o Violão vago mesmo havendo candidato apto, em troca de garantir o Contra baixo quando há guitarrista escalado).
 - **Zero ocorrências** de um mesmo integrante escalado em duas posições da mesma categoria no mesmo culto.
 - **Resultado determinístico**: para o mesmo conjunto de integrantes disponíveis e a mesma lista de posições, a aplicação das regras produz sempre o mesmo conjunto de posições de condução preenchidas (podendo haver mais de uma distribuição válida para as posições não-condução/vocal, ver Regra 4).
 
@@ -199,3 +212,5 @@ Valores reais extraídos da planilha original ("Priorização escala grupo de lo
 - Ambiguidades identificadas na versão original: (1) Vocal não estava explicitamente coberto pela regra de realocação para condução; (2) ausência de critério de desempate entre múltiplos candidatos ou múltiplas vagas possíveis; (3) ausência de tratamento do efeito cascata da realocação; (4) ausência de regra explícita impedindo acúmulo de dois instrumentos simultâneos; (5) ausência de critério de desempate entre **posições** de mesma prioridade (Regra 1.1) — o catálogo real tem vários empates (ver §7.1).
 - A planilha original trazia uma dúvida em aberto sobre se Bateria deveria mesmo ser classificada como instrumento de condução (por ser rítmica, diferente do padrão "instrumento harmônico" de Teclado/Piano/Violão). Essa dúvida foi revisitada e a classificação de Bateria como condução foi **confirmada** — é a classificação vigente e definitiva deste documento, sem ressalva.
 - Esta versão revisada foi implementada e validada na ferramenta de geração automática de escala (`index.html`).
+- **v1.1:** o naipe Vocal passou a ser sempre específico (Melodia, Contralto ou Tenor) por integrante — a habilidade genérica "Vocal", usada implicitamente na v1.0, foi eliminada (ver nota no §5 e ADR correspondente). O catálogo Vocal trocou Baixo por Tenor: ninguém do grupo atual canta a parte de Baixo, então a posição foi removida até que exista alguém cadastrado nesse naipe.
+- **v1.2:** adicionada a Regra 7 — preferência por Contra baixo sobre Violão quando há guitarrista escalado, uma exceção deliberada à prioridade da Regra 1/3.1 para esse trio específico de instrumentos (ver ADR-0005).

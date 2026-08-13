@@ -4,7 +4,7 @@
 const CATALOGO_POSICOES = [
   { nome: "Melodia", categoria: "Vocal", prioridade: 1, conducao: false },
   { nome: "Contralto", categoria: "Vocal", prioridade: 2, conducao: false },
-  { nome: "Baixo", categoria: "Vocal", prioridade: 2, conducao: false },
+  { nome: "Tenor", categoria: "Vocal", prioridade: 2, conducao: false },
   { nome: "Teclado", categoria: "Instrumental", prioridade: 1, conducao: true },
   { nome: "Violão", categoria: "Instrumental", prioridade: 1, conducao: true },
   { nome: "Piano", categoria: "Instrumental", prioridade: 2, conducao: true },

@@ -18,8 +18,8 @@ test("critério 2 — escassez: candidato com menos alternativas vence a posiç�
 });
 
 test("critério 3 e 4 — empate em escassez: prioriza quem ainda não foi escalado, depois ordem alfabética", async ({ page }) => {
-  const ana = integrante("Ana", ["Vocal"]);
-  const beto = integrante("Beto", ["Vocal"]);
+  const ana = integrante("Ana", ["Melodia", "Contralto"]);
+  const beto = integrante("Beto", ["Melodia", "Contralto"]);
   const resultado = await gerarEscala(page, [ana, beto], posicoes("Melodia", "Contralto"));
 
   // Melodia (prioridade 1) primeiro: Ana e Beto empatam em escassez (1 alternativa
@@ -32,8 +32,8 @@ test("critério 3 e 4 — empate em escassez: prioriza quem ainda não foi escal
 test("critério 3 explícito: entre dois aptos com mesma escassez, prioriza quem ainda não foi escalado", async ({ page }) => {
   // Eva já garantiu Teclado (condução) antes do grupo vocal ser resolvido;
   // ao competir com Ivo (ainda livre) por Melodia, Ivo deve ganhar.
-  const eva = integrante("Eva", ["Vocal", "Teclado"]);
-  const ivo = integrante("Ivo", ["Vocal"]);
+  const eva = integrante("Eva", ["Melodia", "Teclado"]);
+  const ivo = integrante("Ivo", ["Melodia"]);
   const resultado = await gerarEscala(page, [eva, ivo], posicoes("Teclado", "Melodia"));
 
   expect(integranteDe(resultado, "Teclado")).toBe("Eva");

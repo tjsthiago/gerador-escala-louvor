@@ -19,8 +19,8 @@ test("integrante com Vocal + único instrumento de condução não é 'gasto' no
   // §7, linha 1: Daniel só tem Teclado como habilidade de condução; se ele também
   // tiver Vocal, não deve ser escalado em Melodia às custas de deixar Teclado vago
   // — mesmo havendo outra pessoa apta em Melodia.
-  const daniel = integrante("Daniel", ["Vocal", "Teclado"]);
-  const outra = integrante("Outra", ["Vocal"]);
+  const daniel = integrante("Daniel", ["Melodia", "Teclado"]);
+  const outra = integrante("Outra", ["Melodia"]);
   const resultado = await gerarEscala(page, [daniel, outra], posicoes("Teclado", "Melodia"));
 
   expect(integranteDe(resultado, "Teclado")).toBe("Daniel");

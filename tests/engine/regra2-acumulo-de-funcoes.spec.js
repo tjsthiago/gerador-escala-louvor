@@ -5,7 +5,7 @@ const { gerarEscala, posicoesDe, estaVaga } = require("../support/motor");
 const { posicoes, integrante } = require("../support/catalogo");
 
 test("permite acumular 1 Vocal + 1 Instrumental (exemplo válido do documento)", async ({ page }) => {
-  const daniel = integrante("Daniel", ["Vocal", "Teclado"]);
+  const daniel = integrante("Daniel", ["Melodia", "Teclado"]);
   const resultado = await gerarEscala(page, [daniel], posicoes("Teclado", "Melodia"));
 
   expect(posicoesDe(resultado, "Daniel").sort()).toEqual(["Melodia", "Teclado"]);
@@ -20,8 +20,8 @@ test("nunca acumula duas posições Instrumentais (mesmo com habilidade nas duas
   expect(estaVaga(resultado, "Flauta")).toBe(true);
 });
 
-test("nunca acumula duas posições Vocais (mesmo com habilidade genérica 'Vocal')", async ({ page }) => {
-  const lia = integrante("Lia", ["Vocal"]);
+test("nunca acumula duas posições Vocais (mesmo com habilidade nos dois naipes)", async ({ page }) => {
+  const lia = integrante("Lia", ["Melodia", "Contralto"]);
   const resultado = await gerarEscala(page, [lia], posicoes("Melodia", "Contralto"));
 
   // Melodia (prioridade 1) é resolvida antes de Contralto (prioridade 2) — Regra 1.

@@ -1,0 +1,7 @@
+# Habilidade Vocal é sempre por naipe específico, não genérica
+
+A v1.0 do cadastro tratava Vocal como uma única habilidade genérica (`"Vocal"`), que `integranteApto()` aceitava como apto para qualquer posição da categoria Vocal (Melodia, Contralto ou Baixo) — uma regra que só existia implicitamente no código, sem estar escrita no glossário nem nas Regras 1–6. Ao introduzir a matriz de habilidades (que torna essa regra visível pela primeira vez) e ao levantar o detalhamento real de naipe por integrante do grupo, decidimos eliminar o atalho genérico: cada integrante vocal agora tem o(s) naipe(s) específico(s) que canta (ex.: `"Contralto"`), e a elegibilidade para uma posição Vocal passa a exigir exatamente esse nome — igual ao que já acontecia com Instrumental.
+
+Consideramos manter o `"Vocal"` genérico como atalho para quem ainda não tivesse naipe cadastrado, convivendo com naipes específicos. Rejeitamos essa opção porque o objetivo da mudança é justamente permitir planejar a escala por naipe (ex.: saber quem pode cobrir Tenor); um atalho genérico sobrevivendo em paralelo manteria a ambiguidade que motivou a mudança, e faria o motor de alocação (Regra 3, 3.1, 4) tratar "aptidão" de forma inconsistente dependendo de qual integrante foi ou não migrado.
+
+Como consequência, ninguém do cadastro atual tem naipe Baixo — a posição foi removida do catálogo (ver changelog v1.1 do documento de regras) até que alguém seja cadastrado nesse naipe.

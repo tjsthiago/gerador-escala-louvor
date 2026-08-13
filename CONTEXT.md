@@ -25,6 +25,9 @@ _Avoid_: Vaga (é o estado de uma Posição sem Integrante escalado, não a Posi
 **Categoria**:
 Classificação de uma Posição: `Vocal` ou `Instrumental`.
 
+**Naipe**:
+Termo usado para as Posições da Categoria Vocal (Melodia, Contralto, Tenor) — cada uma é uma parte vocal distinta. Habilidade Vocal é sempre registrada pelo naipe específico; não existe habilidade genérica "Vocal" que conceda aptidão a todos os naipes de uma vez.
+
 **Prioridade**:
 Número que indica a importância relativa de uma Posição dentro do seu Grupo de resolução (1 = maior prioridade). Empates de prioridade são comuns no catálogo real e são resolvidos por ordem alfabética do nome da Posição, nunca pela ordem de cadastro.
 

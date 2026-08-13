@@ -258,6 +258,72 @@
     font-size: 12px;
   }
 
+  /* ---------- Matriz de habilidades ---------- */
+
+  .painel-matriz { padding-bottom: 4px; }
+
+  .matriz-scroll {
+    overflow-x: auto;
+    border-radius: var(--raio-medio);
+  }
+
+  .matriz-habilidades {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13px;
+  }
+
+  .matriz-habilidades th,
+  .matriz-habilidades td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--cor-borda);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .matriz-habilidades thead th {
+    color: var(--cor-texto-secundaria);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 600;
+    vertical-align: bottom;
+  }
+
+  .matriz-habilidades th.coluna-nome-integrante,
+  .matriz-habilidades td.coluna-nome-integrante {
+    text-align: left;
+    position: sticky;
+    left: 0;
+    background: var(--cor-fundo-elevada);
+  }
+
+  .celula-nome {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+  }
+
+  .avatar-pequena {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+
+  .celula-aptidao {
+    color: var(--cor-texto-terciaria);
+  }
+
+  .celula-aptidao.apto {
+    color: var(--cor-acento-clara);
+    font-weight: 700;
+  }
+
+  .matriz-habilidades tbody tr.integrante-indisponivel {
+    opacity: 0.4;
+  }
+
   .botao-primario {
     background: var(--gradiente-acento);
     color: #fff;
@@ -465,6 +531,13 @@
     </div>
   </header>
 
+  <details class="painel-configuracao painel-matriz">
+    <summary>Ver habilidades de todos os integrantes</summary>
+    <div class="matriz-scroll">
+      <table class="matriz-habilidades" id="matrizHabilidades"></table>
+    </div>
+  </details>
+
   <h1 class="titulo-principal">A <span class="destaque">escala</span><br>desta semana</h1>
 
   <details class="painel-configuracao" open>
@@ -515,7 +588,7 @@
   const CATALOGO_POSICOES = [
     { nome: "Melodia",     categoria: "Vocal",       prioridade: 1, conducao: false },
     { nome: "Contralto",   categoria: "Vocal",       prioridade: 2, conducao: false },
-    { nome: "Baixo",       categoria: "Vocal",       prioridade: 2, conducao: false },
+    { nome: "Tenor",       categoria: "Vocal",       prioridade: 2, conducao: false },
     { nome: "Teclado",     categoria: "Instrumental", prioridade: 1, conducao: true },
     { nome: "Violão",      categoria: "Instrumental", prioridade: 1, conducao: true },
     { nome: "Piano",       categoria: "Instrumental", prioridade: 2, conducao: true },
@@ -527,28 +600,28 @@
 
   const INTEGRANTES_INICIAIS = [
     { nome: "André",          habilidades: ["Contra baixo", "Violão"] },
-    { nome: "Cássia",         habilidades: ["Vocal"] },
-    { nome: "Cristiane",      habilidades: ["Vocal"] },
-    { nome: "Daiane",         habilidades: ["Vocal"] },
-    { nome: "Dani Eduardo",   habilidades: ["Vocal", "Bateria"] },
-    { nome: "Daniel",         habilidades: ["Vocal", "Teclado"] },
-    { nome: "Débora",         habilidades: ["Vocal"] },
-    { nome: "Edivaldo",       habilidades: ["Vocal"] },
+    { nome: "Cássia",         habilidades: ["Contralto"] },
+    { nome: "Cristiane",      habilidades: ["Melodia"] },
+    { nome: "Daiane",         habilidades: ["Melodia"] },
+    { nome: "Dani Eduardo",   habilidades: ["Contralto", "Bateria"] },
+    { nome: "Daniel",         habilidades: ["Tenor", "Teclado"] },
+    { nome: "Débora",         habilidades: ["Melodia"] },
+    { nome: "Edivaldo",       habilidades: ["Tenor"] },
     { nome: "Eliú",           habilidades: ["Contra baixo", "Violão"] },
     { nome: "Gabriel",        habilidades: ["Guitarra", "Violão"] },
     { nome: "Jonatas",        habilidades: ["Bateria"] },
     { nome: "Leandro",        habilidades: ["Bateria", "Contra baixo"] },
-    { nome: "Lucas",          habilidades: ["Vocal"] },
-    { nome: "Manu",           habilidades: ["Vocal"] },
+    { nome: "Lucas",          habilidades: ["Tenor"] },
+    { nome: "Manu",           habilidades: ["Contralto"] },
     { nome: "Marlon",         habilidades: ["Bateria"] },
     { nome: "Mateus Muzel",   habilidades: ["Bateria", "Contra baixo", "Violão"] },
-    { nome: "Matheus Arnoni", habilidades: ["Bateria"] },
-    { nome: "Milene",         habilidades: ["Vocal"] },
+    { nome: "Matheus Arnoni", habilidades: ["Melodia", "Contralto", "Bateria"] },
+    { nome: "Milene",         habilidades: ["Melodia"] },
     { nome: "Miriã",          habilidades: ["Flauta", "Piano"] },
-    { nome: "Nicole",         habilidades: ["Vocal"] },
-    { nome: "Pedro",          habilidades: ["Vocal"] },
-    { nome: "Rafa",           habilidades: ["Vocal"] },
-    { nome: "Thiago",         habilidades: ["Vocal", "Guitarra"] },
+    { nome: "Nicole",         habilidades: ["Contralto"] },
+    { nome: "Pedro",          habilidades: ["Melodia"] },
+    { nome: "Rafa",           habilidades: ["Melodia"] },
+    { nome: "Thiago",         habilidades: ["Guitarra"] },
   ];
 
   const MESES_PT_BR = [
@@ -562,9 +635,6 @@
   // ============================================================
 
   function integranteApto(integrante, posicao) {
-    if (posicao.categoria === "Vocal") {
-      return integrante.habilidades.includes("Vocal") || integrante.habilidades.includes(posicao.nome);
-    }
     return integrante.habilidades.includes(posicao.nome);
   }
 
@@ -701,11 +771,31 @@
     return { escalacoes, estadoConducaoFinal: estadoConducaoAtual, estadoNaoConducao };
   }
 
-  // Regra 6: vagas em aberto, distinguindo severidade.
-  function calcularVagas(posicoesAbertas, estadoConducaoFinal, estadoNaoConducao) {
-    return posicoesAbertas
-      .filter((p) => (p.conducao ? estadoConducaoFinal.get(p.nome) : estadoNaoConducao.get(p.nome)) == null)
-      .map((p) => ({ posicao: p.nome, categoria: p.categoria, conducao: p.conducao }));
+  // Regra 7 (ver ADR-0005): Guitarra e Violão cobrem um papel harmônico
+  // parecido, então quem acaba escalado no Violão e também tem habilidade
+  // Contra baixo é preferido no Contra baixo (se estiver vago) sempre que
+  // alguém tiver sido escalado em Guitarra — isso tem prioridade sobre a
+  // Regra 1/3.1 (mesmo que esse integrante fosse único apto para Violão) e
+  // deliberadamente não cascateia: o Violão simplesmente fica vaga.
+  function preferirContraBaixoQuandoHaGuitarrista(linhas, integrantesDisponiveis) {
+    const linhaGuitarra = linhas.find((l) => l.posicao.nome === "Guitarra");
+    const linhaViolao = linhas.find((l) => l.posicao.nome === "Violão");
+    const linhaContraBaixo = linhas.find((l) => l.posicao.nome === "Contra baixo");
+
+    if (!linhaGuitarra?.integrante || !linhaViolao?.integrante || !linhaContraBaixo || linhaContraBaixo.integrante) {
+      return linhas;
+    }
+
+    const violonista = integrantesDisponiveis.find((i) => i.nome === linhaViolao.integrante);
+    if (!violonista || !violonista.habilidades.includes("Contra baixo")) {
+      return linhas;
+    }
+
+    return linhas.map((linha) => {
+      if (linha.posicao.nome === "Violão") return { ...linha, integrante: null };
+      if (linha.posicao.nome === "Contra baixo") return { ...linha, integrante: violonista.nome };
+      return linha;
+    });
   }
 
   function gerarEscala(integrantesDisponiveis, posicoesAbertas) {
@@ -718,18 +808,20 @@
       faseConducao.escalacoes, faseConducao.estado
     );
 
-    const escalacoesFinais = faseNaoConducao.escalacoes;
-    const vagas = calcularVagas(posicoesAbertas, faseNaoConducao.estadoConducaoFinal, faseNaoConducao.estadoNaoConducao);
+    const escalaPorPosicao = new Map(faseNaoConducao.escalacoes.map((e) => [e.posicao, e.integrante]));
+    const linhasIniciais = ordenarPosicoes(posicoesAbertas).map((p) => ({
+      posicao: p,
+      integrante: escalaPorPosicao.get(p.nome) || null,
+    }));
 
-    const escalaPorPosicao = new Map(escalacoesFinais.map((e) => [e.posicao, e.integrante]));
+    // Regra 6: vagas em aberto, distinguindo severidade — calculada a partir
+    // das linhas finais, já refletindo a troca da Regra 7 quando aplicável.
+    const linhas = preferirContraBaixoQuandoHaGuitarrista(linhasIniciais, integrantesDisponiveis);
+    const vagas = linhas
+      .filter((l) => !l.integrante)
+      .map((l) => ({ posicao: l.posicao.nome, categoria: l.posicao.categoria, conducao: l.posicao.conducao }));
 
-    return {
-      linhas: ordenarPosicoes(posicoesAbertas).map((p) => ({
-        posicao: p,
-        integrante: escalaPorPosicao.get(p.nome) || null,
-      })),
-      vagas,
-    };
+    return { linhas, vagas };
   }
 
   // ============================================================
@@ -811,6 +903,10 @@
       checkbox.checked = integrante.disponivel;
       checkbox.addEventListener("change", () => {
         integrante.disponivel = checkbox.checked;
+        const linhaMatriz = document.querySelector(
+          `#matrizHabilidades tbody tr[data-integrante="${CSS.escape(integrante.nome)}"]`
+        );
+        if (linhaMatriz) linhaMatriz.classList.toggle("integrante-indisponivel", !checkbox.checked);
       });
       label.appendChild(checkbox);
       label.appendChild(document.createTextNode(integrante.nome));
@@ -841,6 +937,71 @@
       li.appendChild(label);
       lista.appendChild(li);
     }
+  }
+
+  function celulaAptidao(apto) {
+    const td = document.createElement("td");
+    td.className = "celula-aptidao" + (apto ? " apto" : "");
+    td.textContent = apto ? "✓" : "";
+    td.setAttribute("aria-label", apto ? "Apto" : "Não apto");
+    return td;
+  }
+
+  // Matriz é só leitura: reflete integranteApto() para o catálogo completo,
+  // independentemente da seleção de posições do culto corrente.
+  function renderizarMatrizHabilidades() {
+    const tabela = document.getElementById("matrizHabilidades");
+    tabela.innerHTML = "";
+    const posicoesOrdenadas = ordenarPosicoes(CATALOGO_POSICOES);
+
+    const thead = document.createElement("thead");
+    const linhaCabecalho = document.createElement("tr");
+    const thNome = document.createElement("th");
+    thNome.className = "coluna-nome-integrante";
+    thNome.scope = "col";
+    thNome.textContent = "Integrante";
+    linhaCabecalho.appendChild(thNome);
+    for (const posicao of posicoesOrdenadas) {
+      const th = document.createElement("th");
+      th.scope = "col";
+      th.appendChild(document.createTextNode(posicao.nome));
+      if (posicao.conducao) {
+        const marcador = document.createElement("span");
+        marcador.title = "Instrumento de condução";
+        marcador.innerHTML = " " + iconeConducao();
+        th.appendChild(marcador);
+      }
+      linhaCabecalho.appendChild(th);
+    }
+    thead.appendChild(linhaCabecalho);
+
+    const tbody = document.createElement("tbody");
+    for (const integrante of estadoApp.integrantes) {
+      const tr = document.createElement("tr");
+      tr.dataset.integrante = integrante.nome;
+      if (!integrante.disponivel) tr.className = "integrante-indisponivel";
+
+      const tdNome = document.createElement("td");
+      tdNome.className = "coluna-nome-integrante";
+      const celulaNome = document.createElement("div");
+      celulaNome.className = "celula-nome";
+      const avatar = nodeAvatar(integrante.nome);
+      avatar.classList.add("avatar-pequena");
+      celulaNome.appendChild(avatar);
+      const nomeSpan = document.createElement("span");
+      nomeSpan.textContent = integrante.nome;
+      celulaNome.appendChild(nomeSpan);
+      tdNome.appendChild(celulaNome);
+      tr.appendChild(tdNome);
+
+      for (const posicao of posicoesOrdenadas) {
+        tr.appendChild(celulaAptidao(integranteApto(integrante, posicao)));
+      }
+      tbody.appendChild(tr);
+    }
+
+    tabela.appendChild(thead);
+    tabela.appendChild(tbody);
   }
 
   function renderizarAvisoVagasConducao() {
@@ -966,6 +1127,7 @@
     atualizarCabecalhoData();
     renderizarListaIntegrantesConfig();
     renderizarListaPosicoesConfig();
+    renderizarMatrizHabilidades();
     renderizarAvisoVagasConducao();
     renderizarListaEscala();
     renderizarListaPapeis();

@@ -31,6 +31,7 @@ O projeto deve ser **um único arquivo**: `index.html`, na raiz do repositório.
 4. Desempate, nesta ordem: prioridade da posição → menor número de posições alternativas para as quais o candidato também é apto → ainda não escalado no culto → ordem alfabética.
 5. Ao realocar alguém para condução, reavaliar em cascata a vaga que ele deixou, repetindo até não haver mais ganho possível.
 6. Vaga sem candidato apto é exibida como "vaga em aberto", nunca omitida — distinguindo severidade (condução vs. não-condução/vocal).
+7. Se alguém foi escalado em Guitarra, quem está no Violão e também tem habilidade Contra baixo é movido para o Contra baixo (se vago) — mesmo sendo único apto para Violão. Exceção deliberada à Regra 1/3.1, específica a esse trio; o Violão fica vago, sem cascata de substituição.
 
 ## Qualidade de código dentro do arquivo único
 

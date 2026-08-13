@@ -33,15 +33,15 @@ test("ADR-0001: painel de posições só permite marcar/desmarcar — sem campos
     await expect(linha.locator('input[type="checkbox"]')).toHaveCount(1);
     await expect(linha).toContainText("condução");
   }
-  for (const nome of ["Melodia", "Contralto", "Baixo", "Contra baixo", "Flauta", "Guitarra"]) {
+  for (const nome of ["Melodia", "Contralto", "Tenor", "Contra baixo", "Flauta", "Guitarra"]) {
     const linha = posicoes.filter({ hasText: nome }).first();
     await expect(linha.locator("select, input:not([type=checkbox])")).toHaveCount(0);
   }
 });
 
-test("gera a escala real a partir dos checkboxes: Daniel em Teclado, Miriã em Piano, Cássia em Melodia", async ({ page }) => {
+test("gera a escala real a partir dos checkboxes: Daniel em Teclado, Miriã em Piano, Cássia em Contralto", async ({ page }) => {
   await marcarSomente(page, "listaIntegrantesConfig", ["Daniel", "Miriã", "Cássia"]);
-  await marcarSomente(page, "listaPosicoesConfig", ["Teclado", "Piano", "Melodia"]);
+  await marcarSomente(page, "listaPosicoesConfig", ["Teclado", "Piano", "Contralto"]);
 
   await page.getByRole("button", { name: "Gerar escala" }).click();
 
@@ -49,7 +49,7 @@ test("gera a escala real a partir dos checkboxes: Daniel em Teclado, Miriã em P
   await expect(linhas).toHaveCount(3);
   await expect(linhas.filter({ hasText: "Teclado" })).toContainText("Daniel");
   await expect(linhas.filter({ hasText: "Piano" })).toContainText("Miriã");
-  await expect(linhas.filter({ hasText: "Melodia" })).toContainText("Cássia");
+  await expect(linhas.filter({ hasText: "Contralto" })).toContainText("Cássia");
 });
 
 test("vaga de condução sem candidato: mostra aviso e estiliza a linha como vaga-conducao", async ({ page }) => {
