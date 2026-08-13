@@ -17,7 +17,8 @@ O projeto deve ser **um único arquivo**: `index.html`, na raiz do repositório.
 
 ## Fontes de verdade
 
-- **Regras de negócio** (como a escala deve ser preenchida): [`docs/regras-preeenchimento-escala-grupo-louvor.md`](docs/regras-rreenchimento-escala-grupo-louvor.md). Documento normativo — qualquer lógica de alocação implementada em `index.html` deve corresponder exatamente às Regras 1–6 e aos critérios de aceite descritos ali. Releia-o antes de alterar a lógica de alocação; não reinvente o critério a partir do zero.
+- **Regras de negócio** (como a escala deve ser preenchida): [`docs/regras-preeenchimento-escala-grupo-louvor.md`](docs/regras-preeenchimento-escala-grupo-louvor.md). Documento normativo — qualquer lógica de alocação implementada em `index.html` deve corresponder exatamente às Regras 1–6 e aos critérios de aceite descritos ali. Releia-o antes de alterar a lógica de alocação; não reinvente o critério a partir do zero.
+- **Glossário do domínio**: [`CONTEXT.md`](CONTEXT.md). Terminologia canônica (Integrante, Posição, Culto, Habilidade, Disponibilidade, Escala, etc.) — nomes de variáveis e funções em `index.html` devem seguir esses termos.
 - **Layout de referência**: [`docs/referencia-layout-escala-louvor.jpeg`](docs/referencia-layout-escala-louvor.jpeg). A interface deve seguir esse visual: tema escuro, tipografia serifada nos títulos, cabeçalho com data do culto e horário de ensaio, lista de posições com ícone por ocupação, e lista de integrantes com avatar e badges coloridas para papéis especiais (ex.: Abertura, Condução, Encerramento).
 
 ## Resumo do motor de alocação
@@ -62,5 +63,5 @@ Um único arquivo não é desculpa para bagunça. Aplique boas práticas de clea
 
 ## Antes de considerar uma mudança concluída
 
-- Teste manualmente os cenários da seção 7 ("Casos de exceção e exemplos de referência") de `docs/regras-rreenchimento-escala-grupo-louvor.md`.
+- Teste manualmente os cenários da seção 7 ("Casos de exceção e exemplos de referência") de `docs/regras-preeenchimento-escala-grupo-louvor.md`.
 - Confirme que `index.html` ainda abre via `file://` sem servidor, sem erros no console e sem chamadas de rede.

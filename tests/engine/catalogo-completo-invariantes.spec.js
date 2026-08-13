@@ -1,0 +1,66 @@
+// Teste de integração com o catálogo real (§7.1) e o elenco real de
+// index.html, checando os invariantes que valem para QUALQUER combinação
+// (Regra 2, Regra 6, métricas de sucesso do §8) — não substitui os testes
+// unitários por regra, serve para pegar regressões que só aparecem com o
+// catálogo completo.
+const { test, expect } = require("@playwright/test");
+const { gerarEscala, posicoesDe } = require("../support/motor");
+const { CATALOGO_POSICOES } = require("../support/catalogo");
+
+// Espelha INTEGRANTES_INICIAIS de index.html.
+const ELENCO_REAL = [
+  { nome: "André", habilidades: ["Contra baixo", "Violão"] },
+  { nome: "Cássia", habilidades: ["Vocal"] },
+  { nome: "Cristiane", habilidades: ["Vocal"] },
+  { nome: "Daiane", habilidades: ["Vocal"] },
+  { nome: "Dani Eduardo", habilidades: ["Vocal", "Bateria"] },
+  { nome: "Daniel", habilidades: ["Vocal", "Teclado"] },
+  { nome: "Débora", habilidades: ["Vocal"] },
+  { nome: "Edivaldo", habilidades: ["Vocal"] },
+  { nome: "Eliú", habilidades: ["Vocal", "Contra baixo", "Violão"] },
+  { nome: "Gabriel", habilidades: ["Guitarra", "Violão"] },
+  { nome: "Jonatas", habilidades: ["Bateria"] },
+  { nome: "Leandro", habilidades: ["Bateria", "Contra baixo"] },
+  { nome: "Lucas", habilidades: ["Vocal"] },
+  { nome: "Manu", habilidades: ["Vocal"] },
+  { nome: "Marlon", habilidades: ["Bateria"] },
+  { nome: "Mateus Muzel", habilidades: ["Bateria", "Contra baixo", "Violão"] },
+  { nome: "Matheus Arnoni", habilidades: ["Bateria"] },
+  { nome: "Milene", habilidades: ["Vocal"] },
+  { nome: "Miriã", habilidades: ["Flauta", "Piano"] },
+  { nome: "Nicole", habilidades: ["Vocal"] },
+  { nome: "Pedro", habilidades: ["Vocal"] },
+  { nome: "Rafa", habilidades: ["Vocal"] },
+  { nome: "Thiago", habilidades: ["Vocal", "Guitarra"] },
+];
+
+test("com o elenco e catálogo completos, nenhum integrante acumula duas posições da mesma categoria", async ({ page }) => {
+  const resultado = await gerarEscala(page, ELENCO_REAL, CATALOGO_POSICOES);
+
+  for (const integrante of ELENCO_REAL) {
+    const categorias = resultado.linhas
+      .filter((l) => l.integrante === integrante.nome)
+      .map((l) => l.posicao.categoria);
+    expect(new Set(categorias).size).toBe(categorias.length);
+  }
+});
+
+test("com o elenco e catálogo completos, todas as 10 posições aparecem no resultado (nenhuma some silenciosamente)", async ({ page }) => {
+  const resultado = await gerarEscala(page, ELENCO_REAL, CATALOGO_POSICOES);
+  expect(resultado.linhas).toHaveLength(10);
+  expect(resultado.linhas.map((l) => l.posicao.nome).sort()).toEqual(
+    [...CATALOGO_POSICOES.map((p) => p.nome)].sort()
+  );
+});
+
+test("Daniel (único apto para Teclado) e Miriã (única apta para Piano) fecham suas posições de condução", async ({ page }) => {
+  const resultado = await gerarEscala(page, ELENCO_REAL, CATALOGO_POSICOES);
+  expect(posicoesDe(resultado, "Daniel")).toContain("Teclado");
+  expect(posicoesDe(resultado, "Miriã")).toContain("Piano");
+});
+
+test("com o elenco completo, todas as posições de condução são preenchidas (§8 — 100% de condução)", async ({ page }) => {
+  const resultado = await gerarEscala(page, ELENCO_REAL, CATALOGO_POSICOES);
+  const vagasConducao = resultado.vagas.filter((v) => v.conducao);
+  expect(vagasConducao).toEqual([]);
+});

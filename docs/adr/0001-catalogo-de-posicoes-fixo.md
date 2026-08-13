@@ -1,0 +1,5 @@
+# Catálogo de posições é fixo, não editável por culto
+
+O catálogo de Posições (categoria, prioridade e sinalizador de instrumento de condução — ver §7.1 de `docs/regras-preeenchimento-escala-grupo-louvor.md`) é definido uma única vez. Por culto, o líder apenas seleciona qual subconjunto desse catálogo precisa ser fechado naquela semana; ele não redefine categoria, prioridade ou o sinalizador de condução de uma posição a cada culto.
+
+Consideramos a alternativa de deixar o líder editar esses atributos semanalmente, já que é ele quem hoje mantém a planilha. Rejeitamos essa opção porque prioridade e condução são a base de todo o motor de alocação (Regra 1, Regra 1.1, Regra 4): se pudessem mudar semana a semana, a "mesma posição" deixaria de ter um significado estável entre cultos, tornando as regras de desempate e a Regra 3.1 (proteção de integrante único) difíceis de raciocinar e de testar. Um catálogo fixo mantém o motor de regras determinístico e testável com os mesmos casos de exceção (§7) toda vez.

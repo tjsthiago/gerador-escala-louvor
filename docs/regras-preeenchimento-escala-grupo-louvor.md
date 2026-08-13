@@ -86,7 +86,10 @@ O objetivo é fechar primeiro as posições de instrumentos de condução, segui
 
 **Ordem de resolução:** todas as posições marcadas como instrumento de condução são resolvidas antes de qualquer posição não-condução ou vocal, independentemente do número de prioridade destas últimas. Dentro de cada um desses dois grupos, resolve-se por prioridade crescente.
 
+**Regra 1.1 — Desempate de prioridade entre posições [NOVO]:** quando duas ou mais posições do mesmo grupo (condução, ou não-condução/vocal) têm o mesmo número de prioridade — situação comum no catálogo real (ver §7.1; ex.: Teclado e Violão, ambas condução, prioridade 1; Contralto e Baixo, ambas vocal, prioridade 2), a ordem de resolução entre elas segue **ordem alfabética pelo nome da posição**. Este critério decide qual **posição** é processada primeiro; é distinto do critério de desempate entre **candidatos** da Regra 4.
+
 - **Critério de aceite:** ao final do processo, não deve existir uma posição de condução em aberto se houver algum integrante disponível, apto e ainda não integralmente ocupado (ver Regra 6) capaz de preenchê-la.
+- **Critério de aceite (1.1):** para o mesmo conjunto de posições e integrantes disponíveis, a ordem de processamento entre posições de mesma prioridade e mesmo grupo é sempre a mesma (alfabética), garantindo resultado determinístico mesmo diante de empates de prioridade.
 
 ### Regra 2 — Acúmulo de funções no mesmo culto
 
@@ -124,7 +127,7 @@ Antes de confirmar a escalação de um integrante em qualquer posição não-con
 Quando mais de uma posição em aberto puder ser preenchida pelo mesmo integrante, ou mais de um integrante apto disputar a mesma posição, aplicar nesta ordem:
 
 1. **Prioridade da posição** — preencher primeiro a de menor número de prioridade.
-2. **Escassez de habilidade** — entre os candidatos aptos para a posição corrente, priorizar quem tem **menos** posições alternativas em aberto para as quais também é apto. Isso evita usar um integrante versátil em uma vaga que outra pessoa também cobre, arriscando deixar sem opção uma vaga que só ele poderia preencher.
+2. **Escassez de habilidade [REVISADO — escopo explícito]** — entre os candidatos aptos para a posição corrente, priorizar quem tem **menos** posições alternativas em aberto, **contando apenas posições dentro do mesmo grupo de resolução que está sendo processado no momento** (condução, ou não-condução/vocal — ver Regra 1). Alternativas do outro grupo não entram na contagem, pois os dois grupos nunca são resolvidos simultaneamente. Isso evita usar um integrante versátil em uma vaga que outra pessoa também cobre, arriscando deixar sem opção uma vaga que só ele poderia preencher.
 3. **Já escalado vs. ainda livre** — entre candidatos empatados nos critérios acima, priorizar quem ainda não foi escalado em nenhuma função naquele culto, para distribuir a participação entre mais integrantes.
 4. **Ordem alfabética** — critério de desempate final, apenas para garantir um resultado determinístico quando todos os critérios anteriores empatam.
 
@@ -137,7 +140,7 @@ Ao mover um integrante de uma posição não-condução (ou Vocal) para uma posi
 1. Verificar se outro integrante disponível e apto pode preencher a vaga deixada.
 2. Se houver, escalá-lo nela.
 3. Se não houver, a vaga permanece em aberto — isso é aceitável, pois a posição de condução tem prioridade maior (Regra 1).
-4. Este processo é reaplicado até que nenhuma realocação adicional aumente o número de posições de condução preenchidas (critério de parada explícito, para evitar um ciclo sem fim de trocas).
+4. **[REVISADO — encadeamento explícito]** Este processo não se limita a um único deslocamento: escalar alguém na vaga deixada (passo 2) é, para todos os efeitos, uma nova escalação em posição não-condução/vocal, e portanto sujeita novamente à Regra 3.1 — esse novo integrante pode, por sua vez, ser integrante único para outra posição de condução ainda em aberto, disparando uma nova realocação e uma nova vaga a reavaliar. O processo se repete, encadeando quantos deslocamentos forem necessários, até que nenhuma realocação adicional aumente o número de posições de condução preenchidas (critério de parada explícito, para evitar um ciclo sem fim de trocas).
 
 **Motivação:** a versão original mandava fazer a realocação mas não dizia o que fazer com a posição que ficava vazia como consequência, nem quando parar de reavaliar.
 
@@ -158,9 +161,27 @@ Os exemplos abaixo usam nomes reais da planilha vigente e servem como casos de t
 | Cenário | Comportamento esperado |
 |---|---|
 | Daniel (única habilidade de condução disponível: Teclado) também tem Vocal | Daniel é escalado em Teclado. Se ainda tiver capacidade de acúmulo (Regra 2) e houver vaga Vocal em aberto, pode também ser escalado em uma posição Vocal. |
-| Miriã tem Piano (condução) e Flauta (não-condução), sendo única apta em ambas | Miriã é escalada em Piano primeiro (Regra 1 + 3.1). Pode acumular Flauta também, pois são de categorias diferentes (Instrumental ambas — **não pode acumular as duas**, ver Regra 2: são da mesma categoria Instrumental, portanto no máximo uma das duas). |
+| Miriã tem Piano (condução) e Flauta (não-condução), sendo única apta em ambas | Miriã é escalada em Piano primeiro (Regra 1 + 3.1). Ela **não** pode também acumular Flauta: Piano e Flauta são ambas da categoria Instrumental, e a Regra 2 permite no máximo uma posição Instrumental por integrante no mesmo culto. |
 | Um integrante é o único apto para dois instrumentos de condução distintos (ex.: Teclado e Violão) no mesmo culto | Ele é escalado em apenas um deles (o de maior prioridade, Regra 4.1). O outro fica como vaga em aberto — condução (Regra 6), pois fisicamente não é possível ocupar dois instrumentos ao mesmo tempo (Regra 2). |
 | Um integrante está escalado em Contra baixo (não-condução) e é o único apto para Bateria (condução, em aberto) | Ele é realocado para Bateria (Regra 3.1). O Contra baixo é reavaliado (Regra 5): se outro integrante apto e disponível existir, assume o Contra baixo; senão, o Contra baixo fica em aberto. |
+| **[NOVO]** Um integrante é o único apto tanto para Teclado (condução, prioridade 1) quanto para Piano (condução, prioridade 2) | Teclado é resolvido primeiro (Regra 1: prioridade crescente). O integrante é escalado em Teclado. Para Piano, ele já está no limite de acúmulo Instrumental (Regra 2) por causa do Teclado — a exceção prevista no critério de aceite da Regra 3.1 se aplica: mesmo sendo "integrante único" para Piano, ele não é reaproveitado ali. Se não houver outro candidato apto, Piano fica como **vaga em aberto — condução** (Regra 6), o que é esperado e não viola a meta de 100% de condução preenchida do §8 (essa meta é condicionada aos limites de acúmulo da Regra 2). |
+
+### 7.1 Catálogo de referência
+
+Valores reais extraídos da planilha original ("Priorização escala grupo de louvor"), usados como dado de teste para os cenários acima e para exercitar a Regra 1.1 (empates de prioridade são a norma neste catálogo, não a exceção):
+
+| Categoria | Posição | Prioridade | Instrumento de condução? |
+|---|---|---|---|
+| Vocal | Melodia | 1 | — |
+| Vocal | Contralto | 2 | — |
+| Vocal | Baixo | 2 | — |
+| Instrumental | Teclado | 1 | Sim |
+| Instrumental | Violão | 1 | Sim |
+| Instrumental | Piano | 2 | Sim |
+| Instrumental | Bateria | 2 | Sim |
+| Instrumental | Contra baixo | 2 | Não |
+| Instrumental | Flauta | 2 | Não |
+| Instrumental | Guitarra | 2 | Não |
 
 ---
 
@@ -174,6 +195,7 @@ Os exemplos abaixo usam nomes reais da planilha vigente e servem como casos de t
 
 ## 9. Histórico / referências
 
-- Regras originais: planilha "Priorização escala grupo de louvor" (abas *Habilidades* e *Posições a serem fechadas*).
-- Ambiguidades identificadas na versão original: (1) Vocal não estava explicitamente coberto pela regra de realocação para condução; (2) ausência de critério de desempate entre múltiplos candidatos ou múltiplas vagas possíveis; (3) ausência de tratamento do efeito cascata da realocação; (4) ausência de regra explícita impedindo acúmulo de dois instrumentos simultâneos.
+- Regras originais: planilha "Priorização escala grupo de louvor" (abas *Habilidades* e *Posições a serem fechadas*), arquivo [`docs/[Priorização escala grupo de louvor] - Priorizações.pdf`](<./[Priorização escala grupo de louvor] - Priorizações.pdf>).
+- Ambiguidades identificadas na versão original: (1) Vocal não estava explicitamente coberto pela regra de realocação para condução; (2) ausência de critério de desempate entre múltiplos candidatos ou múltiplas vagas possíveis; (3) ausência de tratamento do efeito cascata da realocação; (4) ausência de regra explícita impedindo acúmulo de dois instrumentos simultâneos; (5) ausência de critério de desempate entre **posições** de mesma prioridade (Regra 1.1) — o catálogo real tem vários empates (ver §7.1).
+- A planilha original trazia uma dúvida em aberto sobre se Bateria deveria mesmo ser classificada como instrumento de condução (por ser rítmica, diferente do padrão "instrumento harmônico" de Teclado/Piano/Violão). Essa dúvida foi revisitada e a classificação de Bateria como condução foi **confirmada** — é a classificação vigente e definitiva deste documento, sem ressalva.
 - Esta versão revisada foi implementada e validada na ferramenta de geração automática de escala (`index.html`).

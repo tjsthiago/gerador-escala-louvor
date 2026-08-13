@@ -1,0 +1,5 @@
+# Regra 4.2 conta "posições alternativas" só dentro do grupo de resolução corrente
+
+A Regra 4, critério 2 ("escassez de habilidade"), desempata candidatos pela quantidade de posições alternativas em aberto para as quais também são aptos. Essa contagem considera **apenas** posições dentro do mesmo grupo de resolução que está sendo processado no momento (condução, ou não-condução/vocal — Regra 1) — nunca as duas ao mesmo tempo.
+
+A alternativa seria contar todas as posições em aberto do candidato, de qualquer grupo. Rejeitamos essa opção porque a Regra 1 já resolve o grupo de condução inteiramente antes do grupo de não-condução/vocal; misturar as duas contagens faria a "escassez" de um candidato durante a resolução de condução ser influenciada por vagas de vocal que sequer estão sendo decididas ainda, o que contraria a ordem estrita definida na Regra 1 e tornaria o resultado sensível à forma como a contagem é implementada, não apenas às regras de negócio. Essa leitura também é a mesma da planilha original (que falava explicitamente em "posições de condução alternativas").
