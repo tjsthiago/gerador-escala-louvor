@@ -33,6 +33,17 @@ O projeto deve ser **um único arquivo**: `index.html`, na raiz do repositório.
 6. Vaga sem candidato apto é exibida como "vaga em aberto", nunca omitida — distinguindo severidade (condução vs. não-condução/vocal).
 7. Se alguém foi escalado em Guitarra, quem está no Violão e também tem habilidade Contra baixo é movido para o Contra baixo (se vago) — mesmo sendo único apto para Violão. Exceção deliberada à Regra 1/3.1, específica a esse trio; o Violão fica vago, sem cascata de substituição.
 
+## Resumo da importação de disponibilidade (Lote)
+
+(ver `CONTEXT.md` — termo "Lote de Cultos" — e ADR-0006/0007/0008 para as decisões completas)
+
+- O líder faz upload do CSV de respostas do formulário de Disponibilidade (Google Forms) + escolhe o mês; a ferramenta gera de uma vez a Escala de todos os domingos desse mês (um Lote).
+- Os domingos do Lote vêm sempre do calendário do mês escolhido, nunca das datas presentes no CSV (ADR-0006).
+- Nome do formulário sem correspondência exata no cadastro cai para o primeiro nome; ambiguidade ou ausência de correspondência gera aviso visível, nunca falha silenciosa (Regra 6 aplicada ao matching).
+- Posições a fechar partem do catálogo completo, iguais para todos os domingos do Lote, mas ajustáveis depois por domingo; papéis especiais são sempre definidos por domingo (ADR-0007).
+- Disponibilidade vinda do CSV continua editável manualmente por domingo depois de gerado — o CSV é a fonte primária, não a única.
+- Só o Lote mais recente é salvo (`localStorage`, local a este navegador — não sincroniza entre dispositivos nem viaja com cópias reenviadas do arquivo); um novo upload substitui o anterior (ADR-0008).
+
 ## Qualidade de código dentro do arquivo único
 
 Um único arquivo não é desculpa para bagunça. Aplique boas práticas de clean code e desenvolvimento web:

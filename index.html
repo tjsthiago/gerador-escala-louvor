@@ -339,6 +339,39 @@
   .botao-primario:hover { filter: brightness(1.08); }
   .botao-primario:active { filter: brightness(0.95); }
 
+  /* ---------- Painel de Lote ---------- */
+
+  .lista-domingos-lote {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 18px 0 0;
+    padding: 0;
+  }
+
+  .botao-domingo-lote {
+    background: var(--cor-fundo-elevada-2);
+    border: 1px solid var(--cor-borda);
+    color: var(--cor-texto-secundaria);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-family: var(--fonte-base);
+    cursor: pointer;
+  }
+
+  .botao-domingo-lote:hover { color: var(--cor-texto); }
+
+  .botao-domingo-lote.selecionado {
+    background: var(--gradiente-acento);
+    border-color: transparent;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  #avisoLote { margin-top: 14px; }
+
   /* ---------- Aviso de vagas de condução ---------- */
 
   .aviso-vagas-conducao {
@@ -531,6 +564,24 @@
     </div>
   </header>
 
+  <details class="painel-configuracao" id="painelLote" open>
+    <summary>Disponibilidade do mês (lote)</summary>
+    <div class="grade-configuracao">
+      <label>
+        Mês do lote
+        <input type="month" id="campoMesLote" aria-label="Mês do lote">
+      </label>
+      <label>
+        CSV de disponibilidade (Google Forms)
+        <input type="file" id="campoArquivoCsv" accept=".csv,text/csv" aria-label="Arquivo CSV de disponibilidade">
+      </label>
+    </div>
+    <button class="botao-primario" id="botaoProcessarLote" type="button">Processar disponibilidade do mês</button>
+    <p class="estado-vazio" id="mensagemLoteVazio" hidden>Nenhum lote salvo neste navegador — envie o CSV do mês para gerar as escalas dos domingos.</p>
+    <ul class="lista-domingos-lote" id="listaDomingosLote" hidden></ul>
+    <div id="avisoLote" hidden></div>
+  </details>
+
   <details class="painel-configuracao painel-matriz">
     <summary>Ver habilidades de todos os integrantes</summary>
     <div class="matriz-scroll">
@@ -603,19 +654,19 @@
     { nome: "Cássia",         habilidades: ["Contralto"] },
     { nome: "Cristiane",      habilidades: ["Melodia"] },
     { nome: "Daiane",         habilidades: ["Melodia"] },
-    { nome: "Dani Eduardo",   habilidades: ["Contralto", "Bateria"] },
     { nome: "Daniel",         habilidades: ["Tenor", "Teclado"] },
+    { nome: "Danieli",        habilidades: ["Contralto", "Bateria"] },
     { nome: "Débora",         habilidades: ["Melodia"] },
     { nome: "Edivaldo",       habilidades: ["Tenor"] },
     { nome: "Eliú",           habilidades: ["Contra baixo", "Violão"] },
+    { nome: "Emanuelle",      habilidades: ["Contralto"] },
     { nome: "Gabriel",        habilidades: ["Guitarra", "Violão"] },
     { nome: "Jonatas",        habilidades: ["Bateria"] },
     { nome: "Leandro",        habilidades: ["Bateria", "Contra baixo"] },
     { nome: "Lucas",          habilidades: ["Tenor"] },
-    { nome: "Manu",           habilidades: ["Contralto"] },
     { nome: "Marlon",         habilidades: ["Bateria"] },
-    { nome: "Mateus Muzel",   habilidades: ["Bateria", "Contra baixo", "Violão"] },
     { nome: "Matheus Arnoni", habilidades: ["Melodia", "Contralto", "Bateria"] },
+    { nome: "Matheus Muzel",  habilidades: ["Bateria", "Contra baixo", "Violão"] },
     { nome: "Milene",         habilidades: ["Melodia"] },
     { nome: "Miriã",          habilidades: ["Flauta", "Piano"] },
     { nome: "Nicole",         habilidades: ["Contralto"] },
@@ -825,15 +876,228 @@
   }
 
   // ============================================================
+  // IMPORTAÇÃO DE DISPONIBILIDADE (LOTE) — funções puras
+  // Um Lote agrupa os Cultos de todos os domingos de um mês, gerados de uma
+  // vez a partir do upload de um CSV de respostas de formulário (ver ADR-0006,
+  // ADR-0007 e a nota "Disponibilidade" em CONTEXT.md).
+  // ============================================================
+
+  // Parser de CSV mínimo (RFC 4180): lida com campos entre aspas contendo
+  // vírgulas e quebras de linha, e aspas escapadas (""). O export do Google
+  // Forms usa exatamente esse formato para o campo "Em quais domingos...".
+  function analisarLinhasCsv(textoCsv) {
+    const linhas = [];
+    let campo = "";
+    let linhaAtual = [];
+    let dentroDeAspas = false;
+    const texto = textoCsv.replace(/^﻿/, "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+    for (let i = 0; i < texto.length; i++) {
+      const c = texto[i];
+      if (dentroDeAspas) {
+        if (c === '"') {
+          if (texto[i + 1] === '"') { campo += '"'; i++; }
+          else dentroDeAspas = false;
+        } else {
+          campo += c;
+        }
+        continue;
+      }
+      if (c === '"') dentroDeAspas = true;
+      else if (c === ',') { linhaAtual.push(campo); campo = ""; }
+      else if (c === '\n') { linhaAtual.push(campo); linhas.push(linhaAtual); linhaAtual = []; campo = ""; }
+      else campo += c;
+    }
+    if (campo !== "" || linhaAtual.length > 0) { linhaAtual.push(campo); linhas.push(linhaAtual); }
+
+    return linhas.filter((linha) => !(linha.length === 1 && linha[0] === ""));
+  }
+
+  // Extrai datas DD/MM do texto livre da resposta (ex.: "1º domingo — 02/08,
+  // 5° domingo- 30/08") e as combina com o ano do Lote — o formulário nunca
+  // inclui o ano. Robusto a inconsistências reais do formulário (° vs º,
+  // hífen vs travessão, com ou sem espaço).
+  function extrairDatasDoCampoDisponibilidade(campo, ano) {
+    const regex = /(\d{2})\/(\d{2})/g;
+    const datas = [];
+    let m;
+    while ((m = regex.exec(campo || "")) !== null) {
+      datas.push(`${ano}-${m[2]}-${m[1]}`);
+    }
+    return datas;
+  }
+
+  // Lê as respostas do formulário de disponibilidade a partir do texto bruto
+  // do CSV. Cada resposta ausente do campo "domingos que não pode" (Regra:
+  // quem não responde está disponível o mês todo, ver CONTEXT.md) resulta em
+  // domingosIndisponiveis: [].
+  function analisarCsvDisponibilidade(textoCsv, ano) {
+    const linhas = analisarLinhasCsv(textoCsv);
+    if (linhas.length === 0) return [];
+    const [cabecalho, ...respostas] = linhas;
+    const idxNome = cabecalho.indexOf("Qual o seu nome?");
+    const idxDomingos = cabecalho.indexOf("Em quais domingos você NÃO pode?");
+
+    return respostas
+      .filter((linha) => linha.some((campo) => campo.trim() !== ""))
+      .map((linha) => ({
+        nomeFormulario: (linha[idxNome] || "").trim(),
+        domingosIndisponiveis: extrairDatasDoCampoDisponibilidade(linha[idxDomingos], ano),
+      }))
+      .filter((resposta) => resposta.nomeFormulario !== "");
+  }
+
+  function primeiroNome(nomeCompleto) {
+    return nomeCompleto.trim().split(/\s+/)[0];
+  }
+
+  // Matching de nome (ver CONTEXT.md, nota sobre Lote): tenta correspondência
+  // exata pelo nome completo do cadastro primeiro (cobre os casos em que o
+  // cadastro já guarda sobrenome por causa de uma colisão, ex. "Matheus
+  // Muzel"); cai para o primeiro nome quando não há colisão nesse grupo.
+  function casarNomeFormularioComIntegrante(nomeFormulario, integrantesCadastro) {
+    const correspondenciaExata = integrantesCadastro.find((i) => i.nome === nomeFormulario);
+    if (correspondenciaExata) return { integrante: correspondenciaExata, ambiguo: false };
+
+    const primeiro = primeiroNome(nomeFormulario);
+    const candidatos = integrantesCadastro.filter((i) => primeiroNome(i.nome) === primeiro);
+    if (candidatos.length === 1) return { integrante: candidatos[0], ambiguo: false };
+    if (candidatos.length > 1) return { integrante: null, ambiguo: true };
+    return { integrante: null, ambiguo: false };
+  }
+
+  // Todos os domingos (ISO) de um mês/ano — nunca inferidos do CSV (ver
+  // ADR-0006): um domingo em que ninguém faltou não deixaria rastro nele.
+  function domingosDoMes(ano, mesIndex) {
+    const domingos = [];
+    const data = new Date(Date.UTC(ano, mesIndex, 1));
+    while (data.getUTCMonth() === mesIndex) {
+      if (data.getUTCDay() === 0) domingos.push(data.toISOString().slice(0, 10));
+      data.setUTCDate(data.getUTCDate() + 1);
+    }
+    return domingos;
+  }
+
+  // Monta o Lote: um Culto por domingo do mês, cada um com sua própria cópia
+  // do cadastro (disponivel calculado a partir do CSV) e suas próprias
+  // Posições/papéis especiais, todos inicializados com o padrão do catálogo
+  // completo (ver ADR-0007). Respostas sem correspondência no cadastro geram
+  // um aviso e são ignoradas, nunca bloqueiam o restante do Lote (Regra 6).
+  function construirLoteDeCultos({ ano, mesIndex, textoCsv, integrantesCadastro, catalogoPosicoes }) {
+    const respostas = analisarCsvDisponibilidade(textoCsv, ano);
+    const avisos = [];
+    const indisponibilidadesPorIntegrante = new Map();
+
+    for (const resposta of respostas) {
+      const { integrante, ambiguo } = casarNomeFormularioComIntegrante(resposta.nomeFormulario, integrantesCadastro);
+      if (ambiguo) {
+        avisos.push(`"${resposta.nomeFormulario}" bate com mais de um integrante do cadastro — resposta ignorada, confira manualmente.`);
+        continue;
+      }
+      if (!integrante) {
+        avisos.push(`"${resposta.nomeFormulario}" não encontrado no cadastro — resposta ignorada.`);
+        continue;
+      }
+      indisponibilidadesPorIntegrante.set(integrante.nome, new Set(resposta.domingosIndisponiveis));
+    }
+
+    const cultos = domingosDoMes(ano, mesIndex).map((data) => ({
+      data,
+      posicoesSelecionadas: new Set(catalogoPosicoes.map((p) => p.nome)),
+      papeisEspeciais: { abertura: "", conducaoDoCulto: "", encerramento: "" },
+      integrantes: integrantesCadastro.map((i) => ({
+        ...i,
+        disponivel: !(indisponibilidadesPorIntegrante.get(i.nome)?.has(data)),
+      })),
+      resultado: { linhas: [], vagas: [] },
+    }));
+
+    return { ano, mesIndex, avisos, cultos };
+  }
+
+  // ============================================================
   // ESTADO DA APLICAÇÃO
   // ============================================================
 
+  const CHAVE_LOTE_STORAGE = "escalaLouvor.loteAtual";
+
   const estadoApp = {
-    integrantes: INTEGRANTES_INICIAIS.map((i) => ({ ...i, disponivel: true })),
-    posicoesSelecionadas: new Set(CATALOGO_POSICOES.map((p) => p.nome)),
-    resultado: { linhas: [], vagas: [] },
-    papeisEspeciais: { abertura: "", conducaoDoCulto: "", encerramento: "" },
+    lote: null,
+    avulso: {
+      integrantes: INTEGRANTES_INICIAIS.map((i) => ({ ...i, disponivel: true })),
+      posicoesSelecionadas: new Set(CATALOGO_POSICOES.map((p) => p.nome)),
+      papeisEspeciais: { abertura: "", conducaoDoCulto: "", encerramento: "" },
+      resultado: { linhas: [], vagas: [] },
+    },
+    integrantes: null,
+    posicoesSelecionadas: null,
+    papeisEspeciais: null,
+    resultado: null,
   };
+
+  // Persistência (ver ADR-0008): guarda só o Lote mais recente, local a este
+  // navegador/arquivo — nunca sincroniza entre dispositivos ou cópias do
+  // arquivo reenviadas. Falha de storage (modo privado, quota) é tolerada
+  // em silêncio: o Lote simplesmente não persiste, sem quebrar a geração.
+  function serializarLote(lote) {
+    return JSON.stringify({
+      ano: lote.ano,
+      mesIndex: lote.mesIndex,
+      avisos: lote.avisos,
+      cultos: lote.cultos.map((c) => ({ ...c, posicoesSelecionadas: [...c.posicoesSelecionadas] })),
+    });
+  }
+
+  function desserializarLote(json) {
+    const bruto = JSON.parse(json);
+    return { ...bruto, cultos: bruto.cultos.map((c) => ({ ...c, posicoesSelecionadas: new Set(c.posicoesSelecionadas) })) };
+  }
+
+  function salvarLote(lote) {
+    try {
+      localStorage.setItem(CHAVE_LOTE_STORAGE, serializarLote(lote));
+    } catch {
+      // localStorage indisponível — o Lote segue funcionando só nesta sessão.
+    }
+  }
+
+  function salvarLoteAtual() {
+    if (estadoApp.lote) salvarLote(estadoApp.lote);
+  }
+
+  function carregarLote() {
+    try {
+      const bruto = localStorage.getItem(CHAVE_LOTE_STORAGE);
+      return bruto ? desserializarLote(bruto) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function cultoDoLotePara(dataISO) {
+    return estadoApp.lote?.cultos.find((c) => c.data === dataISO) || null;
+  }
+
+  // Aponta as propriedades "ativas" de estadoApp (lidas por toda a
+  // renderização) para o Culto do Lote correspondente à data escolhida, ou
+  // para o estado avulso quando a data não pertence a nenhum Lote carregado.
+  // Como são referências, editar um checkbox continua mutando o objeto real
+  // dentro do Lote — só é preciso persistir explicitamente depois.
+  function ativarCultoParaData(dataISO) {
+    const alvo = cultoDoLotePara(dataISO) || estadoApp.avulso;
+    estadoApp.integrantes = alvo.integrantes;
+    estadoApp.posicoesSelecionadas = alvo.posicoesSelecionadas;
+    estadoApp.papeisEspeciais = alvo.papeisEspeciais;
+    estadoApp.resultado = alvo.resultado;
+  }
+
+  // Ao reabrir um Lote salvo, mostra por padrão o próximo domingo ainda não
+  // passado; se o mês inteiro já passou, mostra o último domingo dele.
+  function escolherDataInicialDoLote(lote) {
+    const hojeISO = new Date().toISOString().slice(0, 10);
+    const futuro = lote.cultos.find((c) => c.data >= hojeISO);
+    return (futuro || lote.cultos[lote.cultos.length - 1]).data;
+  }
 
   // ============================================================
   // RENDERIZAÇÃO
@@ -907,6 +1171,7 @@
           `#matrizHabilidades tbody tr[data-integrante="${CSS.escape(integrante.nome)}"]`
         );
         if (linhaMatriz) linhaMatriz.classList.toggle("integrante-indisponivel", !checkbox.checked);
+        salvarLoteAtual();
       });
       label.appendChild(checkbox);
       label.appendChild(document.createTextNode(integrante.nome));
@@ -927,6 +1192,7 @@
       checkbox.addEventListener("change", () => {
         if (checkbox.checked) estadoApp.posicoesSelecionadas.add(posicao.nome);
         else estadoApp.posicoesSelecionadas.delete(posicao.nome);
+        salvarLoteAtual();
       });
       label.appendChild(checkbox);
       label.appendChild(document.createTextNode(posicao.nome + " "));
@@ -1106,6 +1372,7 @@
       select.value = estadoApp.papeisEspeciais[papel.chave];
       select.addEventListener("change", () => {
         estadoApp.papeisEspeciais[papel.chave] = select.value;
+        salvarLoteAtual();
         renderizarListaPapeis();
       });
       colunaIntegrante.appendChild(select);
@@ -1123,8 +1390,64 @@
     }
   }
 
+  function exibirAvisoLote(mensagem) {
+    const container = document.getElementById("avisoLote");
+    container.hidden = false;
+    container.className = "aviso-vagas-conducao";
+    container.innerHTML = `⚠ ${mensagem}`;
+  }
+
+  // Chips de navegação entre os domingos do Lote ativo, mais os avisos de
+  // respostas do CSV sem correspondência no cadastro (Regra 6: nunca em
+  // silêncio) e a mensagem de "nenhum lote salvo" quando não há nada ainda.
+  function renderizarPainelLote() {
+    const lista = document.getElementById("listaDomingosLote");
+    const aviso = document.getElementById("avisoLote");
+    const vazio = document.getElementById("mensagemLoteVazio");
+
+    if (!estadoApp.lote) {
+      lista.hidden = true;
+      lista.innerHTML = "";
+      aviso.hidden = true;
+      aviso.innerHTML = "";
+      vazio.hidden = false;
+      return;
+    }
+
+    vazio.hidden = true;
+    lista.hidden = false;
+    lista.innerHTML = "";
+    const dataAtual = document.getElementById("campoDataCulto").value;
+    for (const culto of estadoApp.lote.cultos) {
+      const li = document.createElement("li");
+      const botao = document.createElement("button");
+      botao.type = "button";
+      botao.className = "botao-domingo-lote" + (culto.data === dataAtual ? " selecionado" : "");
+      botao.textContent = formatarDataCurta(culto.data);
+      botao.addEventListener("click", () => {
+        document.getElementById("campoDataCulto").value = culto.data;
+        ativarCultoParaData(culto.data);
+        renderizarTudo();
+      });
+      li.appendChild(botao);
+      lista.appendChild(li);
+    }
+
+    if (estadoApp.lote.avisos.length > 0) {
+      aviso.hidden = false;
+      aviso.className = "aviso-vagas-conducao";
+      aviso.innerHTML =
+        "⚠ <strong>Respostas do formulário não reconhecidas:</strong><br>" +
+        estadoApp.lote.avisos.map((texto) => `• ${texto}`).join("<br>");
+    } else {
+      aviso.hidden = true;
+      aviso.innerHTML = "";
+    }
+  }
+
   function renderizarTudo() {
     atualizarCabecalhoData();
+    renderizarPainelLote();
     renderizarListaIntegrantesConfig();
     renderizarListaPosicoesConfig();
     renderizarMatrizHabilidades();
@@ -1140,16 +1463,62 @@
   function aoClicarGerarEscala() {
     const integrantesDisponiveis = estadoApp.integrantes.filter((i) => i.disponivel);
     const posicoesAbertas = CATALOGO_POSICOES.filter((p) => estadoApp.posicoesSelecionadas.has(p.nome));
-    estadoApp.resultado = gerarEscala(integrantesDisponiveis, posicoesAbertas);
+    const resultado = gerarEscala(integrantesDisponiveis, posicoesAbertas);
+    estadoApp.resultado = resultado;
+    const alvo = cultoDoLotePara(document.getElementById("campoDataCulto").value) || estadoApp.avulso;
+    alvo.resultado = resultado;
+    salvarLoteAtual();
     renderizarAvisoVagasConducao();
     renderizarListaEscala();
   }
 
-  document.getElementById("botaoGerarEscala").addEventListener("click", aoClicarGerarEscala);
-  document.getElementById("campoDataCulto").addEventListener("change", atualizarCabecalhoData);
+  function aoProcessarLote() {
+    const mesEscolhido = document.getElementById("campoMesLote").value;
+    const arquivo = document.getElementById("campoArquivoCsv").files[0];
+    if (!mesEscolhido || !arquivo) {
+      exibirAvisoLote("Selecione o mês e o arquivo CSV antes de processar.");
+      return;
+    }
 
-  const hoje = new Date();
-  document.getElementById("campoDataCulto").value = hoje.toISOString().slice(0, 10);
+    const [anoStr, mesStr] = mesEscolhido.split("-");
+    const ano = Number(anoStr);
+    const mesIndex = Number(mesStr) - 1;
+
+    const leitor = new FileReader();
+    leitor.onload = () => {
+      const lote = construirLoteDeCultos({
+        ano, mesIndex, textoCsv: String(leitor.result),
+        integrantesCadastro: INTEGRANTES_INICIAIS, catalogoPosicoes: CATALOGO_POSICOES,
+      });
+      estadoApp.lote = lote;
+      salvarLoteAtual();
+      const dataInicial = escolherDataInicialDoLote(lote);
+      document.getElementById("campoDataCulto").value = dataInicial;
+      ativarCultoParaData(dataInicial);
+      renderizarTudo();
+    };
+    leitor.readAsText(arquivo, "UTF-8");
+  }
+
+  document.getElementById("botaoGerarEscala").addEventListener("click", aoClicarGerarEscala);
+  document.getElementById("botaoProcessarLote").addEventListener("click", aoProcessarLote);
+  document.getElementById("campoDataCulto").addEventListener("change", () => {
+    ativarCultoParaData(document.getElementById("campoDataCulto").value);
+    renderizarTudo();
+  });
+
+  const loteSalvo = carregarLote();
+  if (loteSalvo) {
+    estadoApp.lote = loteSalvo;
+    const dataInicial = escolherDataInicialDoLote(loteSalvo);
+    document.getElementById("campoDataCulto").value = dataInicial;
+    document.getElementById("campoMesLote").value = `${loteSalvo.ano}-${String(loteSalvo.mesIndex + 1).padStart(2, "0")}`;
+    ativarCultoParaData(dataInicial);
+  } else {
+    const hoje = new Date();
+    document.getElementById("campoDataCulto").value = hoje.toISOString().slice(0, 10);
+    ativarCultoParaData(document.getElementById("campoDataCulto").value);
+  }
 
   renderizarTudo();
 </script>

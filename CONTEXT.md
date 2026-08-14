@@ -14,7 +14,7 @@ _Avoid_: Membro (termo usado na planilha original; superado por "Integrante" no 
 Não é uma entidade própria — é a relação entre um Integrante e uma Posição que ele está apto a ocupar, conforme cadastro. É permanente, ao contrário da Disponibilidade.
 
 **Disponibilidade**:
-Sinalização por Culto indicando se um Integrante pode ser escalado naquela semana, independente de suas Habilidades (que são permanentes).
+Sinalização por Culto indicando se um Integrante pode ser escalado naquela semana, independente de suas Habilidades (que são permanentes). Normalmente é coletada de uma vez para vários Cultos futuros (um mês) através de um formulário externo à ferramenta, em forma negativa — o Integrante informa em quais Cultos do período ele **não** pode, não quais pode. Integrante que não responde ao formulário é considerado disponível em todos os Cultos do período.
 
 ### Posições
 
@@ -54,3 +54,7 @@ Entre os Integrantes disponíveis para um Culto, aquele que é o único apto, po
 
 **Vaga em aberto**:
 Posição sem Integrante escalado ao final do processo de alocação. Sempre exibida, nunca omitida, distinguindo severidade: condução (alta) vs. não-condução/vocal (informativa).
+
+**Lote de Cultos**:
+Agrupamento de todos os Cultos de um mês calendário, gerados de uma vez a partir de um único upload do formulário de Disponibilidade (ver ADR-0006, ADR-0007). Os domingos do Lote vêm sempre do calendário do mês escolhido, nunca das datas que aparecem no formulário — um domingo em que ninguém faltou não deixa rastro nele. Dentro do Lote, o catálogo de Posições a fechar é o mesmo para todos os Cultos por padrão (ajustável depois por Culto); os papéis especiais (Abertura, Condução do culto, Encerramento) são sempre definidos individualmente por Culto, nunca herdados do Lote. Depois de gerado, a Disponibilidade de um Integrante num Culto específico do Lote ainda pode ser ajustada manualmente — o formulário é a fonte primária, não a única. Só o Lote mais recente é mantido; um novo upload substitui o anterior.
+_Avoid_: Mês de escalas (ambíguo com "mês" no sentido de calendário puro, caso o período de coleta um dia deixe de ser mensal)
